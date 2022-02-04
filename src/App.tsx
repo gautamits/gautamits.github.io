@@ -4,26 +4,20 @@ import Education from './components/Education'
 import Projects from './components/Projects'
 import Experience from './components/Experience'
 import Contacts from './components/Contacts'
+import GithubPages from './components/GithubPages'
 import Modal from 'react-modal';
 import {Resume} from './types'
+import useGist from './helpers/useGist'
 
 Modal.setAppElement('#root');
 
 function App() {
-  const [json, setJson] = React.useState<Resume | null>(null)
-  useEffect(() => {
-    fetch('https://api.github.com/gists/6c6d8fd8acdc22f184ca5832a8aa83fb')
-      .then(results => {
-        return results.json();
-      })
-      .then(data => {
-        return JSON.parse(data.files["resume.json"].content)
-      }).then((json:Resume) => {
-        setJson(json)
-      }
-    )
-  }, [])
-  if(!json) return <div>fetching Json</div>
+  // const [json, setJson] = React.useState<Resume | null>(null)
+  const [files, loading, error] = useGist<{'resume.json': Resume}>('https://api.github.com/gists/6c6d8fd8acdc22f184ca5832a8aa83fb')
+  if(loading) return <div>fetching Json</div>
+  if(error) return <div>{JSON.stringify(error)}</div>
+  if(!files || typeof files !== 'object') return <div>files not populated</div>
+  const json = files['resume.json']
   
   return (
     <body>
@@ -150,6 +144,14 @@ function App() {
             <h1>Check Out Some of My Works.</h1>
             <div id="portfolio-wrapper" className="bgrid-quarters s-bgrid-thirds cf">
              <Projects />
+            </div>
+          </div>
+        </div>
+        <div className="row">
+          <div className="twelve columns collapsed">
+            <h1>Github hosted work.</h1>
+            <div id="portfolio-wrapper" className="bgrid-quarters s-bgrid-thirds cf">
+             <GithubPages/>
             </div>
           </div>
         </div>
